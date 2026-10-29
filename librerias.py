@@ -1,33 +1,189 @@
 import os
+from pathlib import Path
+from array import array
+
 def Cargar_Archivo():
+    """
+    Lee un archivo .txt y construye las estructuras de datos
+    necesarias para realizar búsquedas eficientes.
 
-    dec = input("ADVERTENCIA: para poder cargar el archivo, este debe estar en la carpeta Archivos. Esta ahi (s/n)? :").lower()
-    if dec != "s":
-        print("ingrese el archivo a la carpeta (Archivos) y luego vuelva a prender el programa.")
-        print("")
+    Retorna:
+        Un diccionario con las estructuras del archivo.
+        None si ocurre un error durante la carga.
+    """
+
+    # Solicitar el nombre o la ruta del archivo
+    entrada = input(
+        "Nombre del archivo .txt (en Archivos) o ruta: "
+    ).strip()
+
+    # Validar que se haya ingresado una ruta
+    if not entrada:
+        print("Error: debe ingresar un nombre o una ruta.")
         return None
 
-    nombre = input("ingrese el nombre del archivo .txt: ").strip()
-    if not nombre.lower().endswith(".txt"):
-        print("Error, el archivo debe terminar en un .txt")
+    ruta = Path(entrada).expanduser()
+
+    # Validar la extensión
+    if ruta.suffix.lower() != ".txt":
+        print("Error: el archivo debe tener extensión .txt.")
         return None
-    
-    ruta = os.path.join(os.path.dirname(__file__), "Archivos", nombre)
-    nuevas_palabras = []
+
+    # Construir la ruta del archivo
+    if not ruta.is_absolute():
+
+        carpeta_proyecto = Path(__file__).resolve().parent
+
+        # Si solamente ingresó el nombre del archivo
+        if len(ruta.parts) == 1:
+            ruta = carpeta_proyecto / "Archivos" / ruta
+
+        # Si ingresó una ruta relativa
+        else:
+            ruta = carpeta_proyecto / ruta
+
+    # ------------------------------------------------
+    # ESTRUCTURAS DE DATOS
+    # ------------------------------------------------
+
+    # Almacena cada palabra diferente una sola vez
+    vocabulario = []
+
+    # Guarda temporalmente las palabras normalizadas
+    normalizadas = []
+
+    # Almacena los identificadores en orden de aparición
+    orden_ids = array("I")
+
+    # Almacena el número de línea de cada aparición
+    lineas = array("I")
+
+    # Índice Hash para búsqueda exacta
+    indice_exacto = {}
+
+    # Índice Hash para búsqueda sin distinguir mayúsculas
+    indice_simple = {}
+
+    # ------------------------------------------------
+    # LECTURA DEL ARCHIVO
+    # ------------------------------------------------
 
     try:
-        with open(ruta,"r", encoding="utf-8") as archivo:
-            for num_lista, linea in enumerate(archivo,1):
 
+        with ruta.open("r", encoding="utf-8-sig") as archivo:
+
+            # Recorrer el archivo línea por línea
+            for numero_linea, linea in enumerate(archivo, 1):
+
+                # Separar las palabras de la línea
                 for palabra in linea.split():
 
-                    nuevas_palabras.append((palabra,num_lista))
+                    # Posición que ocupará la palabra
+                    posicion = len(orden_ids)
 
-        if len(nuevas_palabras) == 0:
-            print("Archivo vacio o no contiene palabras")
+                    # Consultar si la palabra ya existe
+                    registro = indice_exacto.get(palabra)
+
+                    # --------------------------------
+                    # PALABRA NUEVA
+                    # --------------------------------
+
+                    if registro is None:
+
+                        # Asignar identificador
+                        identificador = len(vocabulario)
+
+                        # Guardar la palabra original
+                        vocabulario.append(palabra)
+
+                        # Normalizar una sola vez
+                        normalizada = palabra.casefold()
+
+                        normalizadas.append(normalizada)
+
+                        # [ID, cantidad, primera línea, última línea]
+                        indice_exacto[palabra] = [
+                            identificador,
+                            1,
+                            numero_linea,
+                            numero_linea
+                        ]
+
+                    # --------------------------------
+                    # PALABRA REPETIDA
+                    # --------------------------------
+
+                    else:
+
+                        # Recuperar su identificador
+                        identificador = registro[0]
+
+                        # Recuperar su versión normalizada
+                        normalizada = normalizadas[identificador]
+
+                        # Aumentar el contador
+                        registro[1] += 1
+
+                        # Actualizar la última línea
+                        registro[3] = numero_linea
+
+                    # --------------------------------
+                    # GUARDAR LA APARICIÓN
+                    # --------------------------------
+
+                    orden_ids.append(identificador)
+
+                    lineas.append(numero_linea)
+
+                    # --------------------------------
+                    # ÍNDICE PARA BÚSQUEDA SIMPLE
+                    # --------------------------------
+
+                    posiciones = indice_simple.get(normalizada)
+
+                    # Si la palabra normalizada no existe
+                    if posiciones is None:
+
+                        posiciones = array("I")
+
+                        indice_simple[normalizada] = posiciones
+
+                    # Guardar la posición de esta aparición
+                    posiciones.append(posicion)
+
+        # ------------------------------------------------
+        # VALIDAR EL CONTENIDO
+        # ------------------------------------------------
+
+        if len(orden_ids) == 0:
+
+            print("Error: el archivo está vacío o no contiene palabras.")
+
             return None
 
-        return nuevas_palabras
+        # ------------------------------------------------
+        # PREPARAR BÚSQUEDAS POR PREFIJO
+        # ------------------------------------------------
+
+        # Ordenar solamente las palabras diferentes
+        claves_ordenadas = sorted(indice_simple)
+
+        # ------------------------------------------------
+        # DEVOLVER LOS DATOS
+        # ------------------------------------------------
+
+        return {
+            "vocabulario": vocabulario,
+            "orden_ids": orden_ids,
+            "lineas": lineas,
+            "indice_exacto": indice_exacto,
+            "indice_simple": indice_simple,
+            "claves_ordenadas": claves_ordenadas
+        }
+
+    # ------------------------------------------------
+    # MANEJO DE ERRORES
+    # ------------------------------------------------
 
     except FileNotFoundError:
         print("Error: no se encontró el archivo.")
@@ -36,13 +192,15 @@ def Cargar_Archivo():
         print("Error: no tiene permisos para leer el archivo.")
 
     except UnicodeDecodeError:
-        print("Error: no se pudo leer la codificación del archivo.")
+        print("Error: el archivo no tiene una codificación UTF-8 válida.")
 
-    except OSError:
-        print("Error: no se pudo abrir el archivo.")
+    except MemoryError:
+        print("Error: no hay memoria suficiente para procesar este archivo.")
+
+    except OSError as error:
+        print(f"Error: no se pudo abrir el archivo ({error}).")
 
     return None
-
     
 
     

@@ -56,15 +56,19 @@ Presione enter para continuar: """)
                 if des != "s":
                     continue
 
-            nuevo = lb.Cargar_Archivo() #Varible alamacena el retorno del algoritmo
+            nuevo = lb.Cargar_Archivo()
 
-            if nuevo is not None: #si el retorno no es None el archivo fue cargado con exito
-                palabras = nuevo # aqui almacenamos una lista(tupla) que tendra cada palabra
-                Archivo_cargado = True 
-                print("Archivo cargado con Exito")
-                print(f"total de palabras {len(palabras)}") #mostramos la cantidad de palabras 
-                enter = input("""
-Presione enter para continuar: """)
+            if nuevo is not None:
+
+                datos = nuevo
+
+                Archivo_cargado = True
+
+                print("Archivo cargado con éxito.")
+
+                print("Total de palabras:", len(datos["orden_ids"]))
+
+                print("Palabras diferentes:", len(datos["vocabulario"]))
                 
             else:
                 print("error, Archivo no fue cargado.")
