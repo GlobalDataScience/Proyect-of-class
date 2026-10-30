@@ -1,6 +1,8 @@
+#Librerias usadas para el funcionamiento de la app
 import os
 from pathlib import Path
 from array import array
+import time
 
 def Cargar_Archivo():
     """
@@ -203,9 +205,32 @@ def Cargar_Archivo():
     return None
     
 
-    
-def Busqueda():
-    pass
+#Metodo Principal de Busqueda
+def Busqueda(datos):
+    palabra = input("Ingrese la palabra que desea buscar: ").strip()
+    #time.perf_counter() es el metodo que usamos para medir el tiempo de ejecucion de nuestro programa
+    inicio = time.perf_counter()
+    #Accedemos al dic que habiamos creado antes y pedimos solo los indices_exactos
+    indice = datos["indice_exacto"]
+    # .get() es una funcion de los dic en py que nos permite ver si existe lo que estamos buscando
+    registro = indice.get(palabra)
+    fin = time.perf_counter()
+    tiempo_ms = (fin-inicio)*1000
+
+    if registro is None:
+        print("La palabra no se encuentra en el .txt")
+    else:
+        print(f"""Palabra encontrada: {palabra}
+Cantidad de apariciones: {registro[1]}
+Primera linea donde se encontro: {registro[2]}
+Ultima Linea donde se vio: {registro[3]}""")
+        
+
+
+    print(f"tiempo buscando: {tiempo_ms:.6f}")
+    enter = input("Presione enter para continuar: ")
+
+
 
 def Busqueda_simple():
     pass

@@ -1,5 +1,4 @@
 import librerias as lb
-import os
 
 #Variables
 Activo = True # bandera que controla el bucle
@@ -14,7 +13,7 @@ while Activo:
 3) Búsqueda Simple 
 4) Búsqueda por Prefijo 
 5) Estadísticas 
-6) Buscar Palabra NoX 
+6) Buscar Palabra No
 7) Análisis Comparativo 
 
 0) Salir""")
@@ -34,7 +33,7 @@ while Activo:
         elif elec != 1 and Archivo_cargado:
             match elec:
                 case 2:
-                    pass
+                    lb.Busqueda(datos)
                 case 3:
                     pass
                 case 4:
@@ -69,6 +68,8 @@ Presione enter para continuar: """)
                 print("Total de palabras:", len(datos["orden_ids"]))
 
                 print("Palabras diferentes:", len(datos["vocabulario"]))
+
+                enter = input("Presione enter para continuar: ")
                 
             else:
                 print("error, Archivo no fue cargado.")
