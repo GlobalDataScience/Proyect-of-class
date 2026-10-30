@@ -43,7 +43,7 @@ while Activo:
                 case 6:
                     pass
                 case 7:
-                    pass
+                    lb.Comparacion(datos)
         elif elec != 1 and not(Archivo_cargado):
             print("No puede acceder a esta funcion hasta que el archivo sea cargado.")
             enter = input("""

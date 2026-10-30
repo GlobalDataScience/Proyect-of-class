@@ -1,5 +1,4 @@
 #Librerias usadas para el funcionamiento de la app
-import os
 from pathlib import Path
 from array import array
 import time
@@ -220,14 +219,16 @@ def Busqueda(datos):
     if registro is None:
         print("La palabra no se encuentra en el .txt")
     else:
+        print("--------- Metodo Dic ----------")
         print(f"""Palabra encontrada: {palabra}
 Cantidad de apariciones: {registro[1]}
 Primera linea donde se encontro: {registro[2]}
 Ultima Linea donde se vio: {registro[3]}""")
+        print("")
         
 
-
-    print(f"tiempo buscando: {tiempo_ms:.6f}")
+    print("-----------Resultados------------")
+    print(f"tiempo buscando: {tiempo_ms:.6f} milisegundos")
     enter = input("Presione enter para continuar: ")
 
 
@@ -244,5 +245,93 @@ def Estadisticas():
 def palabra_numero():
     pass
 
-def Comparacion():
-    pass
+def Comparacion(datos):
+    palabra = input("Ingrese la palabra que desea buscar: ").strip()
+    inicio_arreglo = time.perf_counter()
+    orden = datos["orden_ids"]
+    vocabulario = datos["vocabulario"]
+    lineas = datos["lineas"]
+
+    cantidad = 0
+    primera_linea = None
+    ultima_linea = None
+
+    for posicion, identificador in enumerate(orden):
+        if vocabulario[identificador] == palabra:
+            cantidad +=1
+
+            if primera_linea is None:
+                primera_linea = lineas[posicion]
+            ultima_linea = lineas[posicion]
+
+    final_arreglo = time.perf_counter()
+    tiempoms_arreglo = (final_arreglo-inicio_arreglo)*1000
+
+    if cantidad == 0:
+        print("palabra no encontrada")
+    else:
+        print("----Metodo Arreglo----")
+        print(f"""Palabra encontrada: {palabra}
+Cantidad de apariciones: {cantidad}
+Primera linea donde se encontro: {primera_linea}
+Ultima Linea donde se vio: {ultima_linea}""")
+        print("""
+""")
+
+        enter = input("Presiona enter para continuar con el otro metodo: ")
+    inicio = time.perf_counter()
+    #Accedemos al dic que habiamos creado antes y pedimos solo los indices_exactos
+    indice = datos["indice_exacto"]
+    # .get() es una funcion de los dic en py que nos permite ver si existe lo que estamos buscando
+    registro = indice.get(palabra)
+    fin = time.perf_counter()
+    tiempo_ms = (fin-inicio)*1000
+        
+    if registro is None:
+        print("La palabra no se encuentra en el .txt")
+    else:
+        print("---Metodo Dic---")
+        print(f"""Palabra encontrada: {palabra}
+Cantidad de apariciones: {registro[1]}
+Primera linea donde se encontro: {registro[2]}
+Ultima Linea donde se vio: {registro[3]}""")
+        print("")
+        enter = input("presione enter para continuar: ")
+
+
+        
+
+    diferencia = abs(tiempoms_arreglo - tiempo_ms)   
+    print("----------------------Resultados-------------------")
+    print(f"Método Arreglo O(N): {tiempoms_arreglo:.6f} milisegundos ")
+    print(f"Método Diccionario O(1): {tiempo_ms:.6f} milisegundos")
+    print("")
+    if tiempo_ms < tiempoms_arreglo: 
+        print("Ganador: Metodo Diccionario O(1)")
+        print(f"Diferencia: {diferencia:.6f} ms")
+    elif tiempo_ms > tiempoms_arreglo:
+        print("Ganador: Metodo Arreglo O(N)")
+        print(f"Diferencia: {diferencia:.6f} ms")
+    else:
+        print("Ganador: Empate")
+        print(f"Diferencia: {diferencia:.6f} ms")
+
+    # Verificar que ambos algoritmos entreguen los mismos resultados
+    if registro is None:
+        if cantidad == 0 and primera_linea is None and ultima_linea is None:
+            print("Verificación: ambos algoritmos coinciden. Palabra no encontrada.")
+        else:
+            print("Error: los algoritmos entregaron resultados diferentes.")
+    else:
+        if cantidad == registro[1] and primera_linea == registro[2] and ultima_linea == registro[3]:
+            print("ambos algoritmos entregaron resultados identicos.")
+        else:
+            print("Verificacion: ambos algortimos entregaron resultados distintos.")
+
+    enter = input("presione enter para continuar: ")
+    
+        
+  
+     
+        
+    
