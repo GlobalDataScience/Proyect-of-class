@@ -3,3 +3,6 @@
 
 ._pycache__/
 *.pyc
+
+.DS_Store__/
+*.DS_Store
